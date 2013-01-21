@@ -41,3 +41,26 @@
 	padding: 3px 6px 3px 6px;
 	font-weight: bold;
 }
+
+#columnlist, #filter {
+	border: 2px solid;
+	min-height: 20px;
+	list-style: none;
+	font-size: 14px;
+	padding: 0px;
+}
+
+#columnlist {
+	width: 150px;
+}
+
+#filter {
+	width: 300px;
+}
+.filtercontainer, #columnlist{
+	padding-right: 20px;
+	padding-left: 20px;
+	float: left;
+	display: block;
+	min-height: 20px;
+}
