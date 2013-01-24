@@ -55,7 +55,7 @@
 				// revert : true,
 				revertDuration : 10,
 				cursor : 'move', // sets the cursor apperance
-				revert : true,
+				revert : true
 			    });
 			    $('.filtercontainer').droppable({
 				accept : ".test",
@@ -127,12 +127,12 @@
 			_getSelect : function(defValue) {
 			    var tab = ['=','!=','<','>','<=','>=','like','in','not like','not in'];
 			    var html = '<select>';
-			    for ( var int = 0; int < tab.length; int++) {
+			    for ( var i = 0; i < tab.length; i++) {
 				  html += '<option ';
-				  if(defValue==tab[int]) {
+				  if(defValue==tab[i]) {
 				      html += 'selected ';
 				  }
-				  html += 'value="'+tab[int]+'">'+tab[int]+'</option>'
+				  html += 'value="'+tab[i]+'">'+tab[i]+'</option>'
 			    }
 			    html += '</select>';
 			    return html;
