@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2013 ROMERO Christophe (chromero).  All rights reserved.
+ * jquery.table.js is a part of jquery.table library
+ * ====================================================================
+ * 
+ * jquery.table library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or any later version.
+ * 
+ * This is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * See the GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * voir http://chromero.blogspot.fr/search/label/jQueryTable
+*/
 (function($) {
 
     $
@@ -7,14 +29,12 @@
 			options : {
 			    name : "table",
 			    columns : {},
-			    current_filter : new FilterDescriptor()
+			    current_filter : new FilterDescriptor(),
+			    owner : null
 			},
 
 			_create : function() {
 			    var self = this;
-			    //if(this.options.current_filter==null) {
-				//this.options.current_filter = FilterDescriptor();
-			    //}
 			    this._html = "<DIV id='" + this.options.name
 				    + "_filter' class='filterbuilder'>";
 			    this._html += "<div class='columnlistcontainer'><UL id='columnlist' class='filterbuildercolumns connectedSortable'>";
@@ -46,9 +66,21 @@
 				    self._refresh();
 				}
 			    });
+			    self._refresh();
 			    $("#" + this.options.name + "_filter").dialog({
 				width : 600,
-				height : 400
+				height : 400,
+				title : 'Filtre',
+				modal : true,
+				buttons : {
+					"Ok" : function() {
+						$(this).dialog("close");
+						self.options.owner._setOption('filter',this.options.current_filter);
+					},
+					"Annuler" : function() {
+						$(this).dialog("close");
+					}
+				}
 			    });
 			},
 
@@ -72,7 +104,7 @@
 					"'>",
 					filter[i].caption,
 					'</td><td>',
-					filter[i].op,
+					this._getSelect(filter[i].op),
 					"</td><td><input type='text' name='",
 					this.options.name,
 					'filter',
@@ -85,13 +117,25 @@
 			    $('#filter').empty().append(html);
 			    $('.removeFilter').click(
 				    function() {
-					var rank = $(this).parent().parent()
-						.attr('rank');
-					self.options.current_filter.remove(
-						rank, rank);
-					$(this).parent().parent().remove();
+					var rank = $(this).parent().parent().attr('rank');
+					self.options.current_filter.remove(rank);
+					//$(this).parent().parent().remove();
+					self._refresh();
 				    });
 			    $('.filtercontainer table tbody').sortable();
+			},
+			_getSelect : function(defValue) {
+			    var tab = ['=','!=','<','>','<=','>=','like','in','not like','not in'];
+			    var html = '<select>';
+			    for ( var int = 0; int < tab.length; int++) {
+				  html += '<option ';
+				  if(defValue==tab[int]) {
+				      html += 'selected ';
+				  }
+				  html += 'value="'+tab[int]+'">'+tab[int]+'</option>'
+			    }
+			    html += '</select>';
+			    return html;
 			}
 		    });
 
@@ -124,5 +168,6 @@ FilterDescriptor.prototype.get = function() {
 }
 
 FilterDescriptor.prototype.remove = function(rank) {
-    this.content.splice(rank,rank);
+    this.content.splice(rank,1);
 }
+

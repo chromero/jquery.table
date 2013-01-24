@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2013 ROMERO Christophe (chromero).  All rights reserved.
  * jquery.table.js is a part of jquery.table library
@@ -38,11 +37,15 @@
 			}, {
 				id : 'last',
 				icon : 'ui-icon-arrowthickstop-1-e'
+			}, {
+				id : 'filter',
+				icon : 'ui-icon-search'
 			} ],
 			controls : [],
 			page_size : 30,
 			page : 1,
 			page_count: 1,
+			filter: null,
 			oddclass: 'table_odd',
 			evenclass: 'table_even',
 			sort: null,
@@ -57,7 +60,7 @@
 		    this.options.oddcolor = $('.ui-state-default').css('background-color');
 			this.options.controls = this.options.default_controls.concat(this.options.controls);
 			// creation de la barre de navigation
-            var chaine = "<table id='" + this._getId("table") + "'>";
+            var chaine = "<div id='search'></div><table id='" + this._getId("table") + "'>";
 			chaine += "<tr id='"+this._getId('controlBar')+"'><td><ul id='" + this._getId("navBar") + "' style='list-style:none;margin: 0;'>";
 			for ( var i = 0; i < this.options.controls.length; i++) {
 				chaine += this._getControl(this.options.controls[i]['id'], this.options.controls[i]['icon']);
@@ -97,6 +100,13 @@
 		last : function() {
 			this._setOption('page', this.options.page_count);
 		},
+		filter : function() {
+		    $('#search').filterbuilder({
+			name : 'filter',
+			owner: this,
+			columns: this.options.columns
+		    });
+		},
 		_setOption : function(key, value) {
 			this.options[key] = value;
 			switch (key) {
@@ -117,6 +127,9 @@
 			case 'sort':
 				this._setSort(value);
 				break;
+			case 'filter':
+			    this.getValues();
+			    break;
 			}
 		},
 
@@ -210,13 +223,14 @@ DataProvider.prototype.getColumns = function(table) {
 	    });
 }
 
-DataProvider.prototype.getData = function(table, start, size, sort) {
+DataProvider.prototype.getData = function(table, start, size, sort, filter) {
 	var sortString=(sort==null)?'':'&sort='+sort;
+	var filterString=(filter==null)?'':'&filter='+filter.toString();
 //	$.getJSON(this.baseurl+'?action=list&limit='+start+','+size+sortString+'&token='+token, function(res) {
 //	    table._setOption('values',res);
 
     $.ajax({
-    url: this.baseurl+'?action=list&limit='+start+','+size+sortString+'&token='+token,
+    url: this.baseurl+'?action=list&limit='+start+','+size+sortString+filterString+'&token='+token,
     success: function(texte){
             var regexp = /(\[\[.*\]\]).*/;
             var match = regexp.exec(texte);
