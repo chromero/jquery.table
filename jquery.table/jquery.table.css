@@ -64,3 +64,20 @@
 	display: block;
 	min-height: 20px;
 }
+
+
+.filter, .sort {
+    float:right;
+    vertical-align:middle;
+}
+
+.sort_div, .title_div {
+    float: left;
+}
+
+
+.filter_input {
+    border-width: 1px;
+    padding: 0px;
+    position: absolute;
+}
