@@ -102,6 +102,7 @@
                     });
         },
         destroy: function() {
+            // on restaure le contenu original
             this.element.html($(this).data('old_content'));
             // call the original destroy method since we overwrote it
             $.Widget.prototype.destroy.call(this);
@@ -168,42 +169,61 @@
         },
         _createHeader: function() {
             // on supprime l'ancien si besoin
-            $('#' + this._getId('header')).empty();
-            var chaine = ""; //"<tr id='"+this._getId('header')+"'>";
+            var ctrl_id = '#' + this._getId('header');
+            
+            $(ctrl_id).empty();
+            var chaine = ""; 
+            // [{id:xxx,label:xxx,type:xxx},{....}]
+            // ou
+            // [[{label:xxx,colspan:xxx},...],
+            // [{id:xxx,label:xxx,type:xxx},{....}]
+            // ]
+            // si header multilignes, on commence par ça
             var cols = this.options.columns;
+
+            if(cols[0] instanceof Array) {
+                for(var i=0;i<cols.length-1;i++) {
+                    chaine+='<TR>';
+                    for(var j=0;j<cols[i].length;j++){
+                        chaine += '<TD class="'+ this._getId('preheader')+'" colspan="'+cols[i][j].colspan+'">'+cols[i][j].label+'</TD>';
+                    }
+                    chaine += '</TR>';
+                }
+                cols = cols[i];
+            }
+            $(chaine).insertBefore($(ctrl_id));
             var self = this;
             var sort;
             var filter;
 
+            chaine = '';
             filter = "<div class='filter ui-icon ui-icon-search'></div>";
             sort = "<div class='sort ui-icon ui-icon-triangle-2-n-s'></div>";
             for (var i = 0; i < cols.length; i++) {
                 chaine += "<th field='" + cols[i]['id'] + "'><div class='title_div'>" + cols[i]['label'] + "</div>" + filter + sort + '</th>';
             }
             $('#' + this._getId('controlBar') + ' td').attr('colspan', cols.length);
-            var ctrl_id = '#' + this._getId('header')
-
             $(ctrl_id).append(chaine);
             // click sur le titre pour tri
             $(ctrl_id + ' .title_div').click(function() {
                 var current_sort = '';
-                if (self.options.sort != null) {
+                if (self.options.sort !== null) {
                     current_sort = self.options.sort.split(' ');
                     $(this).parent().parent().children().children('div.sort').removeClass('ui-icon-triangle-1-s').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-triangle-2-n-s');
                 }
                 var champ = $(this).parent().attr('field');
                 var sens = 'asc';
                 var classe = 'ui-icon-triangle-1-n';
-                if (current_sort[0] == champ) {
+                if (current_sort[0] === champ) {
 
-                    if (current_sort[1] == 'desc') {
+                    if (current_sort[1] === 'desc') {
                         sens = 'asc';
                     } else {
                         sens = 'desc';
                     }
 
                 }
-                classe = (sens == 'desc') ? 'ui-icon-triangle-1-s' : 'ui-icon-triangle-1-n';
+                classe = (sens === 'desc') ? 'ui-icon-triangle-1-s' : 'ui-icon-triangle-1-n';
                 $(this).parent().children('.sort').removeClass('ui-icon-triangle-2-n-s').addClass(classe);
                 self._setOption('sort', (champ + ' ' + sens));
             });
@@ -237,7 +257,7 @@
 
                 //event.preventDefault();
             }).blur(function() {
-                //$('#' + self._getId('input')).remove();
+                $('#' + self._getId('input')).remove();
             });
         },
         // récupère les données correspondantes à la page courante au tri et au filtre en cours
@@ -304,22 +324,99 @@
 
 })(jQuery);
 
+
+/**
+ * @class FilterDescriptor
+ * @constructor
+ * @argument {string} relation ( 'AND' ou 'OR )
+ */
+
+function FilterDescriptor(relation) {
+    this.content = [];
+    
+    if(typeof(relation)==='undefined') {
+        relation='AND';
+    }
+    this.relation = relation;
+}
+
+/**
+ * 
+ * @function
+ * @argument {mixed} string: field champ, ou FilterDescriptor
+ * @argument {string} caption nom affiché
+ * @argument {string} operator <,>,<=,like,...
+ * @argument {string} value valeur
+ * 
+ */ 
+FilterDescriptor.prototype.add = function(field,caption,operator,value) {
+    if(field instanceof FilterDescriptor) {
+        this.content.push(field);
+    } else {
+        this.content.push({
+            field:field,
+            caption:caption,
+            op:operator,
+            value:value
+        });
+    }
+}
+
+/**
+ * @function get renvoie le contenu du filtre
+ */
+
+FilterDescriptor.prototype.get = function() {
+    return this.content;
+}
+
+/**
+ * 
+ * @function remove supprime l'item de rang rank
+ * @argument {int} rank rang de l'item à supprimer
+ */ 
+FilterDescriptor.prototype.remove = function(rank) {
+    this.content.splice(rank,1);
+}
+
+
+/**
+ * 
+ * @class DataProvider
+ *      Exemple de classe de récupération des données
+ *      
+ * @param {string} baseurl url de base pour la récupération
+ */ 
+
 function DataProvider(baseurl) {
     this.baseurl = baseurl;
 }
 
+/**
+ * @function getColumns
+ * 
+ * retourne la liste des colonnes de la table (appel ajax)
+ * @param {object} table objet jQuery table qui recoit la liste des colonnes
+ * 
+ */ 
 DataProvider.prototype.getColumns = function(table) {
     table.beginAjax();
     $.getJSON(this.baseurl + '?action=columns&token=' + token, function(res) {
         table._setOption('columns', res);
         table.endAjax();
     });
-}
+};
+
+/**
+ * 
+ * @function getData
+ * 
+ */
 
 DataProvider.prototype.getData = function(table, start, size, sort, filter) {
     table.beginAjax();
-    var sortString = (sort == null) ? '' : '&sort=' + sort;
-    var filterString = (filter == null) ? '' : '&filter=' + JSON.stringify(filter);
+    var sortString = (sort === null) ? '' : '&sort=' + sort;
+    var filterString = (filter === null) ? '' : '&filter=' + JSON.stringify(filter);
 
     $.ajax({
         url: this.baseurl + '?action=list&limit=' + start + ',' + size + sortString + filterString + '&token=' + token,
@@ -335,18 +432,16 @@ DataProvider.prototype.getData = function(table, start, size, sort, filter) {
             table.endAjax();
         }
     });
+};
 
-
-//});
-}
 DataProvider.prototype.getCount = function(table) {
     table.beginAjax();
     var filter = table.options.filter;
-    var filterString = (filter == null) ? '' : '&filter=' + JSON.stringify(filter);
+    var filterString = (filter === null) ? '' : '&filter=' + JSON.stringify(filter);
     $.getJSON(this.baseurl + '?action=count' + filterString + '&token=' + token, function(res) {
         table._setOption('count', res);
         table.endAjax();
     });
-}
+};
 
 

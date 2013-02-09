@@ -81,3 +81,14 @@
     padding: 0px;
     position: absolute;
 }
+
+.table_preheader {
+    border: black solid thin;
+    padding: 0px;
+    text-align: center;
+}
+
+#table_header th {
+    padding: 0px;
+    border: black solid thin;
+}

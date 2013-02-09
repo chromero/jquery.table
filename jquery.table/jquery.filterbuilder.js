@@ -154,36 +154,3 @@
 
 })(jQuery);
 
-/**
- * Classe FilterDescriptor constructeur
- */
-function FilterDescriptor(relation) {
-    this.content = [];
-    
-    if(typeof(relation)=='undefined') {
-        relation='AND';
-    }
-    this.relation = relation;
-}
-
-FilterDescriptor.prototype.add = function(field,caption,operator,value) {
-    if(field instanceof FilterDescriptor) {
-        this.content.push(field);
-    } else {
-        this.content.push({
-            field:field,
-            caption:caption,
-            op:operator,
-            value:value
-        });
-    }
-}
-
-FilterDescriptor.prototype.get = function() {
-    return this.content;
-}
-
-FilterDescriptor.prototype.remove = function(rank) {
-    this.content.splice(rank,1);
-}
-
