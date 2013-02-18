@@ -26,6 +26,12 @@
     $.widget("ui.table", {
         options: {
             name: "table",
+            template: {
+                navbar_pre: '<div id="$id_controlBar"><ul id="$id_navBar" style="list-style:none;margin: 0;">',
+                navbar_post: '</ul></div><div style="clear:both;"></div>',
+                navbaritem: '<li class="table_controls ui-state-default ui-corner-all" id="$id_$nom" style="float:left;margin-right:2px;text-decoration: none;"><span class="ui-widget ui-corner-all ui-icon ui-button $class" title="$nom"></span></li>',
+                column_header: '<th field="$field"><div class="table_header_div">$field_name</div><div class="table_filter ui-icon ui-icon-search"></div><div class="table_sort ui-icon ui-icon-triangle-2-n-s"></div></th>'
+            },
             default_controls: [{
                     id: 'first',
                     icon: 'ui-icon-arrowthickstop-1-w'
@@ -70,18 +76,18 @@
             this.options.controls = this.options.default_controls.concat(this.options.controls);
             // creation de la barre de navigation
             // ajout du spinner, puis des controles
-            var chaine = "<table id='" + this._getId("table") + "'>";
-            chaine += "<tr id='" + this._getId('controlBar') + "'><td><ul id='" + this._getId("navBar") + "' style='list-style:none;margin: 0;'>";
-            chaine += "<li class='ui-state-default' id='" + this._getId("spinner")
-                    + "' style='float:left;margin-right:2px;text-decoration: none;'>"
-                    + "<span class='ui-widget ui-corner-all ui-icon ui-button' style='background-image: url(\"lib/jquery.table/ajax-loader.gif\");'></span></li>";
+             var chaine = this._template("navbar_pre");
+            chaine += this._getHtml("li", "spinner"," class='table_spinner ui-state-default'");
+            chaine += "<span class='ui-widget ui-corner-all ui-icon ui-button' style='background-image: url(\"lib/jquery.table/ajax-loader.gif\");'></span></li>";
 
-            for (var i = 0; i < this.options.controls.length; i++) {
-                chaine += this._getControl(this.options.controls[i]['id'], this.options.controls[i]['icon']);
+            var ctrls = this.options.controls;
+            for (var i = 0; i < ctrls.length; i++) {
+                chaine += this._template("navbaritem", {nom: ctrls[i].id, class: ctrls[i].icon});
             }
-            chaine += "<li id='" + this._getId('info') + "'></li>";
-            chaine += "</ul></td></tr>";
-            chaine += "<tr id='" + this._getId('header') + "'></tr>";
+            chaine += this._getHtml("li", "info", "") + "</li>";
+            chaine += this._template("navbar_post");
+            chaine += "<table id='" + this._getId("table") + "'>";
+            chaine += this._getHtml("tr", "header", "") + "</tr>";
             chaine += "</table>";
             // on met à jour l'élément pour l'afficher
             this.element.html(chaine);
@@ -92,10 +98,9 @@
             // récupérer les données
             this.getValues();
             var self = this;
-            var classe = this._getId('controls');
             // tous les controles ont la classe <nom>_controls
             // on leur rajoute l'appel de la methode correspondante
-            $('.' + classe).click(
+            $("#"+this._getId('navBar')+" .table_controls").click(
                     function() {
                         var methode = $(this).attr('id').replace(new RegExp('^' + self.options.name + '_'), '');
                         self[methode]();
@@ -121,7 +126,7 @@
             this._setOption('page', this.options.page_count);
         },
         reset_filter: function() {
-            this._setOption('filter',null);
+            this._setOption('filter', null);
         },
         /* filter : function() {
          $('#test').filterbuilder({
@@ -170,9 +175,9 @@
         _createHeader: function() {
             // on supprime l'ancien si besoin
             var ctrl_id = '#' + this._getId('header');
-            
+
             $(ctrl_id).empty();
-            var chaine = ""; 
+            var chaine = "";
             // [{id:xxx,label:xxx,type:xxx},{....}]
             // ou
             // [[{label:xxx,colspan:xxx},...],
@@ -181,11 +186,11 @@
             // si header multilignes, on commence par ça
             var cols = this.options.columns;
 
-            if(cols[0] instanceof Array) {
-                for(var i=0;i<cols.length-1;i++) {
-                    chaine+='<TR>';
-                    for(var j=0;j<cols[i].length;j++){
-                        chaine += '<TD class="'+ this._getId('preheader')+'" colspan="'+cols[i][j].colspan+'">'+cols[i][j].label+'</TD>';
+            if (cols[0] instanceof Array) {
+                for (var i = 0; i < cols.length - 1; i++) {
+                    chaine += '<TR>';
+                    for (var j = 0; j < cols[i].length; j++) {
+                        chaine += '<TD class="' + this._getId('preheader') + '" colspan="' + cols[i][j].colspan + '">' + cols[i][j].label + '</TD>';
                     }
                     chaine += '</TR>';
                 }
@@ -238,7 +243,7 @@
             var field = element.parent().attr('field');
             var html = '<INPUT id="' + this._getId('input') + '" class="filter_input" type="text" />';
             $('#' + this._getId('header')).append(html);
-            $('#' + this._getId('input')).width(element.parent().width()-4).height(element.parent().children(':first').height()-4).position({
+            $('#' + this._getId('input')).width(element.parent().width() - 4).height(element.parent().children(':first').height() - 4).position({
                 my: 'center',
                 at: 'center',
                 of: element.parent()
@@ -316,6 +321,29 @@
         // renvoie un id avec comme préfixe le nom de la table
         _getId: function(id) {
             return this.options.name + '_' + id;
+        },
+        /**
+         * renvoie un element html
+         * @param {String} element : l'élément à ajouter (ex: LI, TD,..)
+         * @param {String} id id de l'élement (auquel on ajoute le nom en prefixe)
+         * @param {String} attributes : attributs a ajouter
+         * @returns {String} le html de l'élement correspondant
+         */
+        _getHtml: function(element, id, attributes) {
+            var html = "<" + element + " id='" + this._getId(id) + "' " + attributes + ">";
+            return html;
+        },
+        _template: function(nom, valeurs) {
+            if (typeof(valeurs) === 'undefined') {
+                valeurs = {};
+            }
+            var chaine = this.options.template[nom];
+            var values = $.extend(valeurs, {id: this.options.name});
+            for (var keys in values) {
+                var regexp = new RegExp('\\$' + keys,'g');
+                chaine = chaine.replace(regexp, values[keys]);
+            }
+            return chaine;
         }
 
     });
@@ -333,9 +361,9 @@
 
 function FilterDescriptor(relation) {
     this.content = [];
-    
-    if(typeof(relation)==='undefined') {
-        relation='AND';
+
+    if (typeof(relation) === 'undefined') {
+        relation = 'AND';
     }
     this.relation = relation;
 }
@@ -348,16 +376,16 @@ function FilterDescriptor(relation) {
  * @argument {string} operator <,>,<=,like,...
  * @argument {string} value valeur
  * 
- */ 
-FilterDescriptor.prototype.add = function(field,caption,operator,value) {
-    if(field instanceof FilterDescriptor) {
+ */
+FilterDescriptor.prototype.add = function(field, caption, operator, value) {
+    if (field instanceof FilterDescriptor) {
         this.content.push(field);
     } else {
         this.content.push({
-            field:field,
-            caption:caption,
-            op:operator,
-            value:value
+            field: field,
+            caption: caption,
+            op: operator,
+            value: value
         });
     }
 }
@@ -374,9 +402,9 @@ FilterDescriptor.prototype.get = function() {
  * 
  * @function remove supprime l'item de rang rank
  * @argument {int} rank rang de l'item à supprimer
- */ 
+ */
 FilterDescriptor.prototype.remove = function(rank) {
-    this.content.splice(rank,1);
+    this.content.splice(rank, 1);
 }
 
 
@@ -386,7 +414,7 @@ FilterDescriptor.prototype.remove = function(rank) {
  *      Exemple de classe de récupération des données
  *      
  * @param {string} baseurl url de base pour la récupération
- */ 
+ */
 
 function DataProvider(baseurl) {
     this.baseurl = baseurl;
@@ -398,7 +426,7 @@ function DataProvider(baseurl) {
  * retourne la liste des colonnes de la table (appel ajax)
  * @param {object} table objet jQuery table qui recoit la liste des colonnes
  * 
- */ 
+ */
 DataProvider.prototype.getColumns = function(table) {
     table.beginAjax();
     $.getJSON(this.baseurl + '?action=columns&token=' + token, function(res) {
@@ -443,5 +471,3 @@ DataProvider.prototype.getCount = function(table) {
         table.endAjax();
     });
 };
-
-

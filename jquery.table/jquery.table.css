@@ -25,44 +25,44 @@
 @CHARSET "UTF-8";
 
 .table_odd {
-	background-color: #EEEEEE;
+    background-color: #EEEEEE;
 }
 
 .table_even {
-	background-color: #DDDDDD;
+    background-color: #DDDDDD;
 }
 
 .table_odd TD {
-	padding: 3px 6px 3px 6px;
-	font-weight: bold;
+    padding: 3px 6px 3px 6px;
+    font-weight: bold;
 }
 
 .table_even TD {
-	padding: 3px 6px 3px 6px;
-	font-weight: bold;
+    padding: 3px 6px 3px 6px;
+    font-weight: bold;
 }
 
 #columnlist, #filter {
-	border: 2px solid;
-	min-height: 20px;
-	list-style: none;
-	font-size: 14px;
-	padding: 0px;
+    border: 2px solid;
+    min-height: 20px;
+    list-style: none;
+    font-size: 14px;
+    padding: 0px;
 }
 
 #columnlist {
-	width: 150px;
+    width: 150px;
 }
 
 #filter {
-	width: 300px;
+    width: 300px;
 }
 .filtercontainer, #columnlist{
-	padding-right: 20px;
-	padding-left: 20px;
-	float: left;
-	display: block;
-	min-height: 20px;
+    padding-right: 20px;
+    padding-left: 20px;
+    float: left;
+    display: block;
+    min-height: 20px;
 }
 
 
@@ -91,4 +91,10 @@
 #table_header th {
     padding: 0px;
     border: black solid thin;
+}
+
+.table_spinner {
+    float:left;
+    margin-right:2px;
+    text-decoration: none;   
 }
