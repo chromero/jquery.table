@@ -77,8 +77,8 @@
             // creation de la barre de navigation
             // ajout du spinner, puis des controles
              var chaine = this._template("navbar_pre");
-            chaine += this._getHtml("li", "spinner"," class='table_spinner ui-state-default'");
-            chaine += "<span class='ui-widget ui-corner-all ui-icon ui-button' style='background-image: url(\"lib/jquery.table/ajax-loader.gif\");'></span></li>";
+            chaine += this._getHtml("li", "spinner"," class='table_spinner'");
+            chaine += "<span class='ui-widget ui-corner-all ui-icon ui-button' ></span></li>";
 
             var ctrls = this.options.controls;
             for (var i = 0; i < ctrls.length; i++) {
@@ -161,16 +161,6 @@
                     this._setFilter();
                     break;
             }
-        },
-        // renvoie un controle sous forme de <li>
-        _getControl: function(id, icon) {
-            var classe = this._getId('controls');
-            var chaine = "<li class='" + classe + " ui-state-default ui-corner-all' id='" + this._getId(id)
-                    + "' style='float:left;margin-right:2px;text-decoration: none;'>"
-                    + "<span class='ui-widget ui-corner-all ui-icon ui-button " + icon + "' title='" + id
-                    + "'></span></li>";
-
-            return chaine;
         },
         _createHeader: function() {
             // on supprime l'ancien si besoin
