@@ -223,7 +223,7 @@
                 self._setOption('sort', (champ + ' ' + sens));
             });
             // click sur filtrer = appel de showFilter
-            $('.filter').click(function() {
+            $(ctrl_id+' .filter').click(function() {
                 self.showFilter($(this));
             });
         },
@@ -233,26 +233,27 @@
             var field = element.parent().attr('field');
             var html = '<INPUT id="' + this._getId('input') + '" class="filter_input" type="text" />';
             $('#' + this._getId('header')).append(html);
-            $('#' + this._getId('input')).width(element.parent().width() - 4).height(element.parent().children(':first').height() - 4).position({
+            var $input=$('#' + this._getId('input'));
+            $input.width(element.parent().width() - 4).height(element.parent().children(':first').height() - 4).position({
                 my: 'center',
                 at: 'center',
                 of: element.parent()
             }).focus();
-            $('#' + this._getId('input')).keydown(function(event) {
+            $input.keydown(function(event) {
                 switch (event.which) {
                     case 13:
                         // appliquer le fitre
                         var fd = new FilterDescriptor('AND');
-                        fd.add(field, element.html(), 'like', $('#' + self._getId('input')).val());
+                        fd.add(field, element.html(), 'like', $input.val());
                         self._setOption('filter', fd);
                     case 27:
-                        $('#' + self._getId('input')).remove();
+                        $input.remove();
                         break;
                 }
 
                 //event.preventDefault();
             }).blur(function() {
-                $('#' + self._getId('input')).remove();
+                $input.remove();
             });
         },
         // récupère les données correspondantes à la page courante au tri et au filtre en cours
@@ -361,7 +362,7 @@ function FilterDescriptor(relation) {
 /**
  * 
  * @function
- * @argument {mixed} string: field champ, ou FilterDescriptor
+ * @argument {mixed} field champ, ou FilterDescriptor
  * @argument {string} caption nom affiché
  * @argument {string} operator <,>,<=,like,...
  * @argument {string} value valeur
@@ -378,7 +379,7 @@ FilterDescriptor.prototype.add = function(field, caption, operator, value) {
             value: value
         });
     }
-}
+};
 
 /**
  * @function get renvoie le contenu du filtre
@@ -386,7 +387,7 @@ FilterDescriptor.prototype.add = function(field, caption, operator, value) {
 
 FilterDescriptor.prototype.get = function() {
     return this.content;
-}
+};
 
 /**
  * 
@@ -395,7 +396,7 @@ FilterDescriptor.prototype.get = function() {
  */
 FilterDescriptor.prototype.remove = function(rank) {
     this.content.splice(rank, 1);
-}
+};
 
 
 /**
@@ -426,8 +427,15 @@ DataProvider.prototype.getColumns = function(table) {
 };
 
 /**
- * 
  * @function getData
+ * 
+ * renvoie les données à afficher
+ * 
+ * @param {object} table objet jQUery qui recoit les données
+ * @param {int} start premier records à afficher
+ * @param {int} size nombre de records à afficher
+ * @param {string} sort tri
+ * @param {FilterDescriptor} filter filtre à appliquer
  * 
  */
 
